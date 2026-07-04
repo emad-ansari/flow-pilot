@@ -7,23 +7,22 @@ import {
   PackageSearch,
 } from "lucide-react";
 
-import { AppShell } from "@/src/components/layouts/AppShell";
-import { PageHeader } from "@/src/components/common/PageHeader";
-import { StatCard } from "@/src/components/common/StatCard";
-import { StatusBadge} from "@/src/components/common/StatusBadge";
-import { EmptyState } from "@/src/components/common/EmtpyState";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
+import {PageHeader} from '@/components/common/PageHeader'
+import {StatCard} from "@/components/common/StatCard";
+import { StatusBadge} from "@/components/common/StatusBadge";
+import { EmptyState } from "@/components/common/EmtpyState";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/src/components/ui/select";
-import { Checkbox } from "@/src/components/ui/checkbox";
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { orders as allOrders } from "@/lib/types";
-import { paymentVariant, orderVariant } from "@/lib/utils";
+import { paymentVariant, orderVariant, prettyPayment, prettyStatus, formatDate } from "@/lib/utils";
 
 // export const Route = createFileRoute("/")({
 //   head: () => ({
@@ -39,25 +38,9 @@ import { paymentVariant, orderVariant } from "@/lib/utils";
 //   component: OrdersPage,
 // });
 
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  const date = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-  return date;
-}
 
-function prettyStatus(s: string) {
-  return s
-    .toLowerCase()
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
 
-function prettyPayment(s: string) {
-  return s.charAt(0) + s.slice(1).toLowerCase();
-}
-
-function OrdersPage() {
+export default function OrdersPage() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<string>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -93,7 +76,7 @@ function OrdersPage() {
   const ready = allOrders.filter((o) => o.status === "READY_TO_SHIP").length;
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Orders"
         description="Track, manage and fulfill every order across your storefront in one clean workspace."
@@ -102,7 +85,7 @@ function OrdersPage() {
             <Button variant="outline" size="sm" className="h-9 gap-1.5">
               <Download className="h-4 w-4" /> Export
             </Button>
-            <Button size="sm" className="h-9 gap-1.5 shadow-[var(--shadow-elegant)]">
+            <Button size="sm" className="h-9 gap-1.5 shadow-(--shadow-elegant)">
               <Plus className="h-4 w-4" /> Create order
             </Button>
           </>
@@ -116,10 +99,10 @@ function OrdersPage() {
         <StatCard label="Ready to ship" value={ready} icon={Truck} hint="Queued" tone="success" trend={{ value: "8.2%", direction: "up" }} />
       </div>
 
-      <div className="rounded-xl border border-border bg-card shadow-[var(--shadow-card)] overflow-hidden">
+      <div className="rounded-xl border border-border bg-card shadow-(--shadow-card) overflow-hidden">
         <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-[220px] max-w-sm">
+            <div className="relative flex-1 min-w-55 max-w-sm">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
@@ -129,7 +112,7 @@ function OrdersPage() {
               />
             </div>
             <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
-              <SelectTrigger className="h-9 w-[170px]">
+              <SelectTrigger className="h-9 w-42.5">
                 <ListFilter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -210,7 +193,7 @@ function OrdersPage() {
                     <td className="py-2 px-2.5 font-medium text-foreground tabular-nums">{o.id}</td>
                     <td className="py-2 px-2.5 font-medium text-foreground">{o.customer}</td>
                     <td className="py-2 px-2.5 text-muted-foreground tabular-nums whitespace-nowrap">{o.phone}</td>
-                    <td className="py-2 px-2.5 text-foreground max-w-[220px] truncate">{o.product}</td>
+                    <td className="py-2 px-2.5 text-foreground max-w-55 truncate">{o.product}</td>
                     <td className="py-2 px-2.5 text-right font-semibold text-foreground tabular-nums">
                       ${o.amount.toFixed(2)}
                     </td>
@@ -223,7 +206,7 @@ function OrdersPage() {
                     <td className="py-2 px-2.5 text-muted-foreground whitespace-nowrap">{formatDate(o.createdAt)}</td>
                     <td className="py-2 px-2.5 pr-4 text-right">
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                        <DropdownMenuTrigger >
                           <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100 transition-opacity">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
@@ -275,6 +258,6 @@ function OrdersPage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

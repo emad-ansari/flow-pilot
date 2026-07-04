@@ -1,7 +1,7 @@
 import { Bell, Search, Menu } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/src/components/ui/avatar";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function TopNavbar({ onMenuClick }: { onMenuClick: () => void }) {
   return (

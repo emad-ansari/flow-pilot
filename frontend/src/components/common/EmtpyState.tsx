@@ -14,7 +14,7 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-primary shadow-[var(--shadow-soft)]">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-primary shadow-(--shadow-soft)">
         <Icon className="h-6 w-6" strokeWidth={2} />
       </div>
       <h3 className="mt-4 text-base font-semibold text-foreground">{title}</h3>

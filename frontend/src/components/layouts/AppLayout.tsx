@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from "react";
-import { Sidebar } from "./Sidebar";
-import { TopNavbar } from "./TopNavbar";
-import { Sheet, SheetContent } from "@/src/components/ui/sheet";
+import { useState} from "react";
+import { Sidebar } from "../common/Sidebar";
+import { TopNavbar } from "../common/TopNavbar";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Outlet } from "react-router-dom";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   return (
     <div className="flex min-h-screen w-full bg-background">
@@ -19,7 +20,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="flex-1 md:pl-52 flex flex-col min-w-0">
         <TopNavbar onMenuClick={() => setMobileOpen(true)} />
-        <main className="flex-1 px-4 py-5 md:px-6 md:py-6">{children}</main>
+        <main className="flex-1 px-4 py-5 md:px-6 md:py-6">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

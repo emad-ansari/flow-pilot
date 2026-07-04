@@ -1,14 +1,22 @@
+import {BrowserRouter, Route, Routes} from 'react-router-dom'
+import { AppLayout } from './components/layouts/AppLayout'
+import OrdersPage from './pages/OrdersPage'
+import SchedulerLogsPage from './pages/SchedulerLogsPage'
 
 
 
 function App() {
 
   return (
-    <div className = "min-h-screen flex items-center justify-center">
-      <h1 className = "text-5xl text-red-500">Going to start building dashboard</h1>
-    </div>
-    
+    <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<OrdersPage/>} />
+            <Route path="scheduler-logs" element={<SchedulerLogsPage/>} />
 
+          </Route>
+        </Routes>
+    </BrowserRouter>
   )
 }
 

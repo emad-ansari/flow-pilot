@@ -13,7 +13,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <aside className="flex h-full w-52 flex-col border-r border-sidebar-border bg-sidebar">
       <div className="flex h-16 items-center gap-2.5 px-5 border-b border-sidebar-border">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[var(--shadow-elegant)]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-(--shadow-elegant)">
           <Sparkles className="h-4.5 w-4.5" strokeWidth={2.5} />
         </div>
         <div className="flex flex-col leading-tight">
@@ -38,7 +38,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   className={cn(
                     "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
                     active
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[var(--shadow-soft)]"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-(--shadow-soft)"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
                   )}
                 >

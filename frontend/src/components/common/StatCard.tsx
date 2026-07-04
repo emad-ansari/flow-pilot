@@ -20,7 +20,7 @@ const toneMap = {
 
 export function StatCard({ label, value, hint, icon: Icon, trend, tone = "default" }: Props) {
   return (
-    <div className="group relative rounded-xl border border-border bg-card px-4 py-3 shadow-[var(--shadow-card)] transition-all duration-300 hover:shadow-[var(--shadow-elegant)] hover:-translate-y-0.5 hover:border-primary/20">
+    <div className="group relative rounded-xl border border-border bg-card px-4 py-3 shadow-(--shadow-card) transition-all duration-300 hover:shadow-[var(--shadow-elegant)] hover:-translate-y-0.5 hover:border-primary/20">
       <div className="flex items-center gap-3">
         <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", toneMap[tone])}>
           <Icon className="h-4.5 w-4.5" strokeWidth={2.25} />
