@@ -1,56 +1,71 @@
-
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  Package, ShoppingBag, Loader2, Truck, Plus, Download, RefreshCw, Search,
-  MoreHorizontal, Eye, Copy, Phone, ChevronLeft, ChevronRight, ListFilter,
+  Package,
+  ShoppingBag,
+  Loader2,
+  Truck,
+  RefreshCw,
+  Search,
+  MoreHorizontal,
+  Eye,
+  Copy,
+  Phone,
+  ChevronLeft,
+  ChevronRight,
+  ListFilter,
   PackageSearch,
 } from "lucide-react";
 
-import {PageHeader} from '@/components/common/PageHeader'
-import {StatCard} from "@/components/common/StatCard";
-import { StatusBadge} from "@/components/common/StatusBadge";
+import { PageHeader } from "@/components/common/PageHeader";
+import { StatCard } from "@/components/common/StatCard";
+import { StatusBadge } from "@/components/common/StatusBadge";
 import { EmptyState } from "@/components/common/EmtpyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { orders as allOrders } from "@/lib/types";
-import { paymentVariant, orderVariant, prettyPayment, prettyStatus, formatDate } from "@/lib/utils";
-
-// export const Route = createFileRoute("/")({
-//   head: () => ({
-//     meta: [
-//       { title: "Orders — FlowPilot" },
-//       { name: "description", content: "Manage, track and fulfill orders across every sales channel with FlowPilot's operations dashboard." },
-//       { property: "og:title", content: "Orders — FlowPilot" },
-//       { property: "og:description", content: "Manage, track and fulfill orders with FlowPilot." },
-//       { property: "og:type", content: "website" },
-//       { name: "twitter:card", content: "summary_large_image" },
-//     ],
-//   }),
-//   component: OrdersPage,
-// });
-
-
+import {
+  paymentVariant,
+  orderVariant,
+  prettyPayment,
+  prettyStatus,
+  formatDate,
+} from "@/lib/utils";
+import { CreateOrderDialog } from "@/components/common/CreateOrderDialog";
+import { OrderDetailsSheet } from "@/components/common/OrderDetailsSheet";
 
 export default function OrdersPage() {
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<string>("all");
+  const [status, setStatus] = useState<string>("All");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [detailsOrder, setDetailsOrder] = useState<
+    (typeof allOrders)[number] | null
+  >(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
   const [page, setPage] = useState(1);
   const pageSize = 8;
 
   const filtered = useMemo(() => {
     return allOrders.filter((o) => {
       const q = query.trim().toLowerCase();
-      const matchQ = !q ||
+      const matchQ =
+        !q ||
         o.id.toLowerCase().includes(q) ||
         o.customer.toLowerCase().includes(q) ||
         o.product.toLowerCase().includes(q);
@@ -65,7 +80,8 @@ export default function OrdersPage() {
   const toggle = (id: string) => {
     setSelected((prev) => {
       const s = new Set(prev);
-      if (s.has(id)) s.delete(id); else s.add(id);
+      if (s.has(id)) s.delete(id);
+      else s.add(id);
       return s;
     });
   };
@@ -75,6 +91,11 @@ export default function OrdersPage() {
   const processing = allOrders.filter((o) => o.status === "PROCESSING").length;
   const ready = allOrders.filter((o) => o.status === "READY_TO_SHIP").length;
 
+  const openDetails = (o: (typeof allOrders)[number]) => {
+    setDetailsOrder(o);
+    setDetailsOpen(true);
+  };
+
   return (
     <>
       <PageHeader
@@ -82,21 +103,43 @@ export default function OrdersPage() {
         description="Track, manage and fulfill every order across your storefront in one clean workspace."
         actions={
           <>
-            <Button variant="outline" size="sm" className="h-9 gap-1.5">
-              <Download className="h-4 w-4" /> Export
-            </Button>
-            <Button size="sm" className="h-9 gap-1.5 shadow-(--shadow-elegant)">
-              <Plus className="h-4 w-4" /> Create order
-            </Button>
+            <CreateOrderDialog />
           </>
         }
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
-        <StatCard label="Total orders" value={totalOrders} icon={Package} hint="All channels" trend={{ value: "12.4%", direction: "up" }} />
-        <StatCard label="Placed" value={placed} icon={ShoppingBag} hint="Awaiting" tone="info" trend={{ value: "3.1%", direction: "up" }} />
-        <StatCard label="Processing" value={processing} icon={Loader2} hint="In progress" tone="warning" trend={{ value: "1.8%", direction: "down" }} />
-        <StatCard label="Ready to ship" value={ready} icon={Truck} hint="Queued" tone="success" trend={{ value: "8.2%", direction: "up" }} />
+        <StatCard
+          label="Total orders"
+          value={totalOrders}
+          icon={Package}
+          hint="All channels"
+          trend={{ value: "12.4%", direction: "up" }}
+        />
+        <StatCard
+          label="Placed"
+          value={placed}
+          icon={ShoppingBag}
+          hint="Awaiting"
+          tone="info"
+          trend={{ value: "3.1%", direction: "up" }}
+        />
+        <StatCard
+          label="Processing"
+          value={processing}
+          icon={Loader2}
+          hint="In progress"
+          tone="warning"
+          trend={{ value: "1.8%", direction: "down" }}
+        />
+        <StatCard
+          label="Ready to ship"
+          value={ready}
+          icon={Truck}
+          hint="Queued"
+          tone="success"
+          trend={{ value: "8.2%", direction: "up" }}
+        />
       </div>
 
       <div className="rounded-xl border border-border bg-card shadow-(--shadow-card) overflow-hidden">
@@ -106,35 +149,50 @@ export default function OrdersPage() {
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
-                onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setPage(1);
+                }}
                 placeholder="Search by Order ID or Customer..."
                 className="pl-9 h-9 bg-secondary/60 border-transparent focus-visible:bg-background focus-visible:border-border"
               />
             </div>
-            <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
+            <Select
+              value={status}
+              onValueChange={(v) => {
+                setStatus(v);
+                setPage(1);
+              }}
+            >
               <SelectTrigger className="h-9 w-42.5">
                 <ListFilter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="PLACED">Placed</SelectItem>
-                <SelectItem value="PROCESSING">Processing</SelectItem>
-                <SelectItem value="READY_TO_SHIP">Ready to ship</SelectItem>
-                <SelectItem value="SHIPPED">Shipped</SelectItem>
-                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                <SelectItem value="All">All statuses</SelectItem>
+                <SelectItem value="Placed">Placed</SelectItem>
+                <SelectItem value="Processing">Processing</SelectItem>
+                <SelectItem value="Ready to ship">Ready to ship</SelectItem>
+                <SelectItem value="Shipped">Shipped</SelectItem>
+                <SelectItem value="Cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="flex items-center gap-2">
             {selected.size > 0 && (
-              <span className="text-xs text-muted-foreground">{selected.size} selected</span>
+              <span className="text-xs text-muted-foreground">
+                {selected.size} selected
+              </span>
             )}
             <Button
               variant="outline"
               size="sm"
               className="h-9 gap-1.5"
-              onClick={() => { setQuery(""); setStatus("all"); setSelected(new Set()); }}
+              onClick={() => {
+                setQuery("");
+                setStatus("all");
+                setSelected(new Set());
+              }}
             >
               <RefreshCw className="h-3.5 w-3.5" /> Refresh
             </Button>
@@ -147,7 +205,14 @@ export default function OrdersPage() {
             title="No orders match your filters"
             description="Try clearing the search or switching to a different status to find what you're looking for."
             action={
-              <Button variant="outline" size="sm" onClick={() => { setQuery(""); setStatus("all"); }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setQuery("");
+                  setStatus("all");
+                }}
+              >
                 Clear filters
               </Button>
             }
@@ -188,38 +253,69 @@ export default function OrdersPage() {
                     className="group border-b border-border last:border-0 transition-colors hover:bg-muted/40"
                   >
                     <td className="py-2 pl-4 pr-2">
-                      <Checkbox checked={selected.has(o.id)} onCheckedChange={() => toggle(o.id)} />
+                      <Checkbox
+                        checked={selected.has(o.id)}
+                        onCheckedChange={() => toggle(o.id)}
+                      />
                     </td>
-                    <td className="py-2 px-2.5 font-medium text-foreground tabular-nums">{o.id}</td>
-                    <td className="py-2 px-2.5 font-medium text-foreground">{o.customer}</td>
-                    <td className="py-2 px-2.5 text-muted-foreground tabular-nums whitespace-nowrap">{o.phone}</td>
-                    <td className="py-2 px-2.5 text-foreground max-w-55 truncate">{o.product}</td>
+                    <td className="py-2 px-2.5 font-medium text-foreground tabular-nums">
+                      {o.id}
+                    </td>
+                    <td className="py-2 px-2.5 font-medium text-foreground">
+                      {o.customer}
+                    </td>
+                    <td className="py-2 px-2.5 text-muted-foreground tabular-nums whitespace-nowrap">
+                      {o.phone}
+                    </td>
+                    <td className="py-2 px-2.5 text-foreground max-w-55 truncate">
+                      {o.product}
+                    </td>
                     <td className="py-2 px-2.5 text-right font-semibold text-foreground tabular-nums">
                       ${o.amount.toFixed(2)}
                     </td>
                     <td className="py-2 px-2.5">
-                      <StatusBadge variant={paymentVariant(o.payment)}>{prettyPayment(o.payment)}</StatusBadge>
+                      <StatusBadge variant={paymentVariant(o.payment)}>
+                        {prettyPayment(o.payment)}
+                      </StatusBadge>
                     </td>
                     <td className="py-2 px-2.5">
-                      <StatusBadge variant={orderVariant(o.status)}>{prettyStatus(o.status)}</StatusBadge>
+                      <StatusBadge variant={orderVariant(o.status)}>
+                        {prettyStatus(o.status)}
+                      </StatusBadge>
                     </td>
-                    <td className="py-2 px-2.5 text-muted-foreground whitespace-nowrap">{formatDate(o.createdAt)}</td>
+                    <td className="py-2 px-2.5 text-muted-foreground whitespace-nowrap">
+                      {formatDate(o.createdAt)}
+                    </td>
                     <td className="py-2 px-2.5 pr-4 text-right">
                       <DropdownMenu>
-                        <DropdownMenuTrigger >
-                          <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100 transition-opacity">
+                        <DropdownMenuTrigger>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 opacity-0 group-hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100 transition-opacity"
+                          >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-52">
-                          <DropdownMenuItem onClick={() => { void navigator.clipboard.writeText(o.id); toast.success("Order ID copied"); }}>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              void navigator.clipboard.writeText(o.id);
+                              toast.success("Order ID copied");
+                            }}
+                          >
                             <Copy className="h-4 w-4 mr-2" /> Copy Order ID
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { void navigator.clipboard.writeText(o.phone); toast.success("Phone number copied"); }}>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              void navigator.clipboard.writeText(o.phone);
+                              toast.success("Phone number copied");
+                            }}
+                          >
                             <Phone className="h-4 w-4 mr-2" /> Copy Phone Number
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openDetails(o)}>
                             <Eye className="h-4 w-4 mr-2" /> View Order Details
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -234,11 +330,22 @@ export default function OrdersPage() {
 
         <div className="flex flex-col gap-3 border-t border-border p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
-            Showing <span className="font-medium text-foreground">{paged.length}</span> of{" "}
-            <span className="font-medium text-foreground">{filtered.length}</span> orders
+            Showing{" "}
+            <span className="font-medium text-foreground">{paged.length}</span>{" "}
+            of{" "}
+            <span className="font-medium text-foreground">
+              {filtered.length}
+            </span>{" "}
+            orders
           </p>
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              disabled={page === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
@@ -252,12 +359,24 @@ export default function OrdersPage() {
                 {p}
               </Button>
             ))}
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={page === pageCount} onClick={() => setPage((p) => Math.min(pageCount, p + 1))}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              disabled={page === pageCount}
+              onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </div>
+
+      <OrderDetailsSheet
+        order={detailsOrder}
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+      />
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { Bell, Search, Menu } from "lucide-react";
+import {  Search, Menu } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,19 +28,14 @@ export function TopNavbar({ onMenuClick }: { onMenuClick: () => void }) {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="relative rounded-full">
-          <Bell className="h-4.5 w-4.5" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
-        </Button>
-        <div className="h-6 w-px bg-border mx-1" />
         <div className="flex items-center gap-2.5 pr-1">
           <Avatar className="h-8 w-8 ring-2 ring-background">
             <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-              AK
+              ME
             </AvatarFallback>
           </Avatar>
           <div className="hidden lg:flex flex-col leading-tight">
-            <span className="text-sm font-medium text-foreground">Ava Kim</span>
+            <span className="text-sm font-medium text-foreground">Mohamamd Emad</span>
             <span className="text-[11px] text-muted-foreground">Operations lead</span>
           </div>
         </div>
