@@ -1,75 +1,378 @@
-# React + TypeScript + Vite
+# FlowPilot 🚀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> A modern full-stack order management system built with **React, Node.js, Express, TypeScript, MongoDB**, and an automated scheduler for order status progression.
 
-Currently, two official plugins are available:
+## 📖 Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+OrderPilot is a mini Order Management System that allows users to create and manage customer orders while automatically progressing order statuses using a scheduled background task.
 
-## React Compiler
+The project demonstrates backend API design, database modeling, scheduler implementation, React dashboard development, and clean architecture.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+# ✨ Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Order Management
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Create new orders
+- View all orders
+- Search by customer name or phone number
+- Filter by order status
+- Pagination support
+- Payment status tracking
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Automated Scheduler
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Runs every **5 minutes**
+- Automatically updates:
+  - **Placed → Processing** (after 10 minutes)
+  - **Processing → Ready To Ship** (after 20 minutes)
+- Maintains complete order status history
+- Stores scheduler execution logs
+- Protected using a secret header
 
-```
+## Dashboard
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Responsive React Dashboard
+- Orders Table
+- Scheduler Logs
+- Status Filter
+- Search
+- Pagination
+- Loading, Empty and Error States
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# 🏗 Tech Stack
+
+## Frontend
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- React Hook Form
+- Zod
+
+## Backend
+
+- Node.js
+- Express.js
+- TypeScript
+- MongoDB
+- Mongoose
+- Zod
+- node-cron
+
+---
+
+# 📂 Project Structure
 
 ```
+flow-pilot/
+│
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   └── ...
+│
+├── backend/
+│   ├── src/
+│     │
+│     ├── config/
+│     ├── controllers/
+│     ├── cron/
+│     ├── middlewares/
+│     ├── models/
+│     ├── routes/
+│     ├── services/
+│     ├── validators/
+│     ├── utils/
+│     └── server.ts
+│
+└── README.md
+```
+
+---
+
+# 🗄 Database Design
+
+## Orders Collection
+
+Stores all customer orders.
+
+Fields
+
+- customerName
+- phone
+- productName
+- amount
+- paymentStatus
+- orderStatus
+- statusHistory
+- createdAt
+- updatedAt
+
+---
+
+## Scheduler Logs Collection
+
+Stores every scheduler execution.
+
+Fields
+
+- runTime
+- checked
+- updated
+- duration
+- status
+- trigger
+- createdAt
+- updatedAt
+
+---
+
+# 📜 Order Status Flow
+
+```
+Placed
+   │
+   │ (10 Minutes)
+   ▼
+Processing
+   │
+   │ (20 Minutes)
+   ▼
+Ready To Ship
+```
+
+Every transition is stored inside the `statusHistory` array.
+
+---
+
+# ⏰ Scheduler
+
+The scheduler runs every **5 minutes** using **node-cron**.
+
+Responsibilities
+
+- Fetch eligible orders
+- Check order age
+- Update order status
+- Maintain status history
+- Store scheduler execution logs
+
+---
+
+# 🔒 Scheduler Security
+
+Scheduler endpoint is protected using a secret header.
+
+```
+x-scheduler-secret: YOUR_SECRET
+```
+
+Unauthorized requests receive **401 Unauthorized**.
+
+---
+
+# ⚡ Race Condition Handling
+
+To reduce race conditions, each update operation verifies both:
+
+- MongoDB `_id`
+- Current `orderStatus`
+
+before updating the document.
+
+This prevents duplicate status transitions if multiple scheduler executions overlap.
+
+---
+
+# 📑 API Documentation
+
+## Orders
+
+### Create Order
+
+```
+POST /api/orders
+```
+
+### Get Orders
+
+```
+GET /api/orders
+```
+
+Query Parameters
+
+| Parameter | Description |
+| ---------- | ----------- |
+| page | Page number |
+| limit | Items per page |
+| orderStatus | Filter by status |
+| search | Customer name or phone |
+
+---
+
+## Scheduler
+
+### Run Scheduler
+
+```
+POST /api/scheduler/run
+```
+
+Headers
+
+```
+x-scheduler-secret
+```
+
+---
+
+### Scheduler Logs
+
+```
+GET /api/scheduler/logs
+```
+
+---
+
+# 🌍 Environment Variables
+
+Backend
+
+```env
+PORT=5000
+
+MONGODB_URI=
+
+SCHEDULER_SECRET=
+
+ENABLE_CRON=true
+
+NODE_ENV=development
+```
+
+Frontend
+
+```env
+VITE_API_BASE_URL=
+```
+
+---
+
+# 🚀 Local Setup
+
+## Clone Repository
+
+```bash
+git clone https://github.com/your-username/orderpilot.git
+```
+
+---
+
+## Backend
+
+```bash
+cd backend
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Run development server
+
+```bash
+npm run dev
+```
+
+---
+
+## Frontend
+
+```bash
+cd frontend
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Run
+
+```bash
+npm run dev
+```
+
+---
+
+# ⏱ Scheduler Setup
+
+The scheduler uses **node-cron**.
+
+To enable it:
+
+```env
+ENABLE_CRON=true
+```
+
+Cron Expression
+
+```
+*/5 * * * *
+```
+
+During development you can temporarily change it to:
+
+```
+* * * * *
+```
+
+to execute every minute.
+
+---
+
+# 📬 Postman Collection
+
+A Postman collection containing all APIs is included in the repository.
+
+- Orders APIs
+- Scheduler APIs
+
+---
+
+# 💡 Design Decisions
+
+### Why MongoDB?
+
+MongoDB provides a flexible schema and allows embedding `statusHistory` directly inside each order, reducing joins and simplifying reads.
+
+### Why Service Layer?
+
+Business logic is isolated from controllers, improving maintainability and testability.
+
+### Why node-cron?
+
+Simple and lightweight solution for scheduled background tasks during local development and deployment on traditional Node.js hosting platforms.
+
+### Why Bulk Updates?
+
+Scheduler uses MongoDB bulk operations to efficiently update multiple orders in a single database call.
+
+---
+
+
+# 👨‍💻 Author
+
+**Mohammad Emad**
+
+Full Stack Developer
