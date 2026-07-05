@@ -15,26 +15,38 @@ export const createOrder = async (data: CreateOrderDto) => {
   return order;
 };
 
-
 export const getOrders = async ({
   page,
   limit = 8,
   status,
+  search,
 }: GetOrdersDto) => {
   const filter: Record<string, unknown> = {};
 
   if (status) {
     filter.orderStatus = status;
   }
+  if (search) {
+    filter.$or = [
+      {
+        customerName: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+      {
+        phone: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+    ];
+  }
 
   const skip = (page - 1) * limit;
 
   const [orders, totalOrders] = await Promise.all([
-    Order.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean(),
+    Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
 
     Order.countDocuments(filter),
   ]);

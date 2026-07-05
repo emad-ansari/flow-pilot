@@ -12,21 +12,14 @@ export const createOrderSchema = z.object({
     .trim()
     .regex(/^[6-9]\d{9}$/, "Invalid phone number"),
 
-  productName: z
-    .string()
-    .trim()
-    .min(2, "Product name is required"),
+  productName: z.string().trim().min(2, "Product name is required"),
 
-  amount: z
-    .number()
-    .positive("Amount must be greater than 0"),
+  amount: z.number().positive("Amount must be greater than 0"),
 
   paymentStatus: z.enum(PAYMENT_STATUS).default("Pending"),
 
   orderStatus: z.enum(ORDER_STATUS).default("Placed"),
 });
-
-
 
 export const getOrdersSchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -34,8 +27,8 @@ export const getOrdersSchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(10),
 
   status: z.enum(ORDER_STATUS).optional(),
+  search: z.string().trim().optional(),
 });
 
 export type GetOrdersDto = z.infer<typeof getOrdersSchema>;
 export type CreateOrderDto = z.infer<typeof createOrderSchema>;
-
