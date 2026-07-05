@@ -1,5 +1,3 @@
-
-
 export const PAYMENT_STATUS = ["Paid", "Pending", "Failed", "Refunded"] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUS)[number];
 
@@ -18,8 +16,6 @@ export type SchedulerStatus = (typeof SCHEDULER_STATUS)[number];
 export const SCHEDULER_TRIGGER = ["Cron", "Manual"] as const;
 export type SchedulerTrigger = (typeof SCHEDULER_TRIGGER)[number];
 
-// ─── Variant type (UI only) ────────────────────────────────────────────────────
-
 export type Variant =
   | "success"
   | "warning"
@@ -29,7 +25,7 @@ export type Variant =
   | "primary"
   | "purple";
 
-// ─── Status history entry ──────────────────────────────────────────────────────
+
 
 export interface StatusHistory {
   fromStatus: OrderStatus;
@@ -38,7 +34,7 @@ export interface StatusHistory {
   updatedBy: "Scheduler" | "User";
 }
 
-// ─── Order (matches backend IOrder response) ───────────────────────────────────
+
 
 export interface Order {
   _id: string;
@@ -53,7 +49,7 @@ export interface Order {
   updatedAt: string;
 }
 
-// ─── Scheduler Log (matches backend ISchedulerLog response) ───────────────────
+
 
 export interface SchedulerLog {
   _id: string;
@@ -67,7 +63,7 @@ export interface SchedulerLog {
   updatedAt: string;
 }
 
-// ─── Pagination ────────────────────────────────────────────────────────────────
+
 
 export interface Pagination {
   currentPage: number;
@@ -85,7 +81,7 @@ export interface LogsPagination extends Pagination {
   totalLogs: number;
 }
 
-// ─── API Response wrappers ─────────────────────────────────────────────────────
+
 
 export interface OrdersResponse {
   success: boolean;
@@ -120,7 +116,7 @@ export interface RunSchedulerResponse {
   };
 }
 
-// ─── Form DTO (what CreateOrderDialog sends) ──────────────────────────────────
+
 
 export interface CreateOrderDto {
   customerName: string;

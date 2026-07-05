@@ -32,7 +32,7 @@ export function useOrders({
   const [isMutating, setIsMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Use a counter to trigger manual refetches
+  
   const [refetchTick, setRefetchTick] = useState(0);
   const refetch = useCallback(() => setRefetchTick((t) => t + 1), []);
 
