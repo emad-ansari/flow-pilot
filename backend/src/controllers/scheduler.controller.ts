@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import * as schedulerService from "@/services/scheduler.service";
-import { SchedulerLog } from "@/models/scheduler-log.model";
+import * as schedulerService from "../services/scheduler.service";
+import { SchedulerLog } from "../models/scheduler-log.model";
 
 export const runScheduler = async (
   req: Request,
