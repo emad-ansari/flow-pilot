@@ -15,4 +15,13 @@ export const ORDER_STATUS = [
   "Cancelled",
 ] as const;
 
+
 export type OrderStatus = (typeof ORDER_STATUS)[number];
+
+export const SCHEDULER_STATUS = [
+  "Success",
+  "Failed",
+] as const;
+
+export type SchedulerStatus =
+  (typeof SCHEDULER_STATUS)[number];
