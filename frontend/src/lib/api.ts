@@ -10,7 +10,7 @@ import type {
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 const SCHEDULER_SECRET = import.meta.env.VITE_SCHEDULER_SECRET ?? "";
 
-// ─── Helpers ───────────────────────────────────────────────────────────────────
+
 
 async function request<T>(
   path: string,
@@ -34,7 +34,7 @@ async function request<T>(
   return res.json() as Promise<T>;
 }
 
-// ─── Orders ────────────────────────────────────────────────────────────────────
+
 
 export interface GetOrdersParams {
   page?: number;
@@ -65,7 +65,7 @@ export async function createOrder(
   });
 }
 
-// ─── Scheduler ────────────────────────────────────────────────────────────────
+
 
 export interface GetSchedulerLogsParams {
   page?: number;
