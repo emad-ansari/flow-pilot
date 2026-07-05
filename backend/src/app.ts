@@ -5,6 +5,8 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 
+import orderRoutes from "./routes/order.route";
+
 const app = express();
 
 app.use(cors());
@@ -21,5 +23,7 @@ app.get("/", (_, res) => {
     message: "OrderPilot API Running 🚀",
   });
 });
+
+app.use("/api/orders", orderRoutes);
 
 export default app;
