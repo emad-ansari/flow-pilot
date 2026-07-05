@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ORDER_STATUS, PAYMENT_STATUS } from "@/lib/types";
+import { ORDER_STATUS, PAYMENT_STATUS } from "../lib/types";
 
 export const createOrderSchema = z.object({
   customerName: z

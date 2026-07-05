@@ -4,7 +4,7 @@ import {
   OrderStatus,
   ORDER_STATUS,
   PAYMENT_STATUS,
-} from "@/lib/types";
+} from "../lib/types";
 
 export interface IStatusHistory {
   fromStatus: OrderStatus;
