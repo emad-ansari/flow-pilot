@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { runScheduler } from "@/services/scheduler.service";
+import { runScheduler } from "../services/scheduler.service";
 
 export const startScheduler = () => {
   cron.schedule("*/5 * * * *", async () => {

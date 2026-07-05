@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as orderService from "../services/order.service";
-import { createOrderSchema , getOrdersSchema } from "@/lib/validators";
+import { createOrderSchema , getOrdersSchema } from "../lib/validators";
 
 export const createOrder = async (
   req: Request,
