@@ -1,6 +1,7 @@
-import { Order } from "@/models/order.model";
+import { IOrder, Order } from "@/models/order.model";
 import { SchedulerLog } from "@/models/scheduler-log.model";
 import { OrderStatus } from "@/lib/types";
+import { AnyBulkWriteOperation } from "mongoose";
 
 type SchedulerTrigger = "Cron" | "Manual";
 
@@ -19,7 +20,7 @@ export const runScheduler = async (trigger: SchedulerTrigger) => {
 
     checked = orders.length;
 
-    const bulkOperations = [];
+    const bulkOperations: AnyBulkWriteOperation<IOrder>[] = [];
     const now = new Date();
 
     for (const order of orders) {
