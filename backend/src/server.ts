@@ -4,7 +4,7 @@ dotenv.config();
 
 import app from "./app";
 import { connectDatabase } from "./config/database";
-import { startScheduler } from "@/cron/scheduler.cron";
+import { startScheduler } from "./cron/scheduler.cron";
 
 const PORT = process.env.PORT || 5000;
 

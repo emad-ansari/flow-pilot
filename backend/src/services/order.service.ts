@@ -1,5 +1,5 @@
-import { Order } from "@/models/order.model";
-import { CreateOrderDto, GetOrdersDto } from "@/lib/validators";
+import { Order } from "../models/order.model";
+import { CreateOrderDto, GetOrdersDto } from "../lib/validators";
 
 export const createOrder = async (data: CreateOrderDto) => {
   const order = await Order.create({
