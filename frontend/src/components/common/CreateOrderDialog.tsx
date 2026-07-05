@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from "react";
-import { toast } from "sonner";
 import { Plus } from "@/lib/icons";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader,
@@ -8,69 +7,80 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import type { Order, OrderStatus, PaymentStatus } from "@/lib/types";
+import type { CreateOrderDto, OrderStatus, PaymentStatus } from "@/lib/types";
 
 interface Props {
   trigger?: ReactNode;
-  onCreate?: (order: Order) => void;
+  /** Called with the raw DTO after the user submits; the parent hook handles the API call */
+  onSubmit: (data: CreateOrderDto) => Promise<boolean>;
+  isMutating?: boolean;
 }
 
 const emptyForm = {
-  customer: "",
-  email: "",
+  customerName: "",
   phone: "",
-  product: "",
+  productName: "",
   amount: "",
-  payment: "PENDING" as PaymentStatus,
-  status: "PLACED" as OrderStatus,
-  notes: "",
+  paymentStatus: "Pending" as PaymentStatus,
+  orderStatus: "Placed" as OrderStatus,
 };
 
-export function CreateOrderDialog({ trigger, onCreate }: Props) {
+export function CreateOrderDialog({ trigger, onSubmit, isMutating = false }: Props) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
-  const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof emptyForm, string>>>({});
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validate = (): boolean => {
+    const errs: typeof errors = {};
+
+    if (form.customerName.trim().length < 2)
+      errs.customerName = "Name must be at least 2 characters";
+
+    // Indian phone: starts 6-9, total 10 digits
+    if (!/^[6-9]\d{9}$/.test(form.phone.trim()))
+      errs.phone = "Enter a valid 10-digit Indian mobile number";
+
+    if (form.productName.trim().length < 2)
+      errs.productName = "Product name must be at least 2 characters";
+
+    const amt = Number(form.amount);
+    if (Number.isNaN(amt) || amt <= 0)
+      errs.amount = "Amount must be a positive number";
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.customer.trim() || !form.product.trim() || !form.amount) {
-      toast.error("Please fill in customer, product and amount");
-      return;
-    }
-    const amount = Number(form.amount);
-    if (Number.isNaN(amount) || amount <= 0) {
-      toast.error("Amount must be a positive number");
-      return;
-    }
-    setSubmitting(true);
-    const order: Order = {
-      id: `FP-${Math.floor(10300 + Math.random() * 700)}`,
-      customer: form.customer.trim(),
-      email: form.email.trim(),
+    if (!validate()) return;
+
+    const dto: CreateOrderDto = {
+      customerName: form.customerName.trim(),
       phone: form.phone.trim(),
-      product: form.product.trim(),
-      amount: Math.round(amount * 100) / 100,
-      payment: form.payment,
-      status: form.status,
-      createdAt: new Date().toISOString(),
+      productName: form.productName.trim(),
+      amount: Math.round(Number(form.amount) * 100) / 100,
+      paymentStatus: form.paymentStatus,
+      orderStatus: form.orderStatus,
     };
-    onCreate?.(order);
-    toast.success(`Order ${order.id} created`);
-    setSubmitting(false);
-    setForm(emptyForm);
-    setOpen(false);
+
+    const success = await onSubmit(dto);
+    if (success) {
+      setForm(emptyForm);
+      setErrors({});
+      setOpen(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger >
+      <DialogTrigger>
         {trigger ?? (
           <Button size="sm" className="h-9 gap-1.5 shadow-(--shadow-elegant)">
             <Plus className="h-4 w-4" /> Create order
@@ -78,7 +88,7 @@ export function CreateOrderDialog({ trigger, onCreate }: Props) {
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-140 p-0 overflow-hidden">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => void handleSubmit(e)}>
           <DialogHeader className="px-6 pt-6 pb-2">
             <DialogTitle>Create order</DialogTitle>
             <DialogDescription>
@@ -88,51 +98,68 @@ export function CreateOrderDialog({ trigger, onCreate }: Props) {
 
           <div className="px-6 py-4 space-y-4 max-h-[65vh] overflow-y-auto">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Customer name" required>
-                <Input value={form.customer} onChange={(e) => set("customer", e.target.value)} placeholder="Jane Cooper" />
+              <Field label="Customer name" required error={errors.customerName}>
+                <Input
+                  value={form.customerName}
+                  onChange={(e) => set("customerName", e.target.value)}
+                  placeholder="Jane Cooper"
+                />
               </Field>
-              <Field label="Email">
-                <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="jane@acme.co" />
+              <Field label="Phone" required error={errors.phone}>
+                <Input
+                  value={form.phone}
+                  onChange={(e) => set("phone", e.target.value)}
+                  placeholder="9876543210"
+                />
               </Field>
-              <Field label="Phone">
-                <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+1 415 555 0142" />
-              </Field>
-              <Field label="Amount (USD)" required>
-                <Input type="number" step="0.01" min="0" value={form.amount} onChange={(e) => set("amount", e.target.value)} placeholder="249.00" />
+              <Field label="Amount (₹)" required error={errors.amount}>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.amount}
+                  onChange={(e) => set("amount", e.target.value)}
+                  placeholder="249.00"
+                />
               </Field>
               <div className="sm:col-span-2">
-                <Field label="Product" required>
-                  <Input value={form.product} onChange={(e) => set("product", e.target.value)} placeholder="Aurora Wireless Headphones" />
+                <Field label="Product" required error={errors.productName}>
+                  <Input
+                    value={form.productName}
+                    onChange={(e) => set("productName", e.target.value)}
+                    placeholder="Aurora Wireless Headphones"
+                  />
                 </Field>
               </div>
               <Field label="Payment status">
-                <Select value={form.payment} onValueChange={(v) => set("payment", v as PaymentStatus)}>
+                <Select
+                  value={form.paymentStatus}
+                  onValueChange={(v) => set("paymentStatus", v as PaymentStatus)}
+                >
                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PENDING">Pending</SelectItem>
-                    <SelectItem value="PAID">Paid</SelectItem>
-                    <SelectItem value="FAILED">Failed</SelectItem>
-                    <SelectItem value="REFUNDED">Refunded</SelectItem>
+                    <SelectItem value="Pending">Pending</SelectItem>
+                    <SelectItem value="Paid">Paid</SelectItem>
+                    <SelectItem value="Failed">Failed</SelectItem>
+                    <SelectItem value="Refunded">Refunded</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
               <Field label="Order status">
-                <Select value={form.status} onValueChange={(v) => set("status", v as OrderStatus)}>
+                <Select
+                  value={form.orderStatus}
+                  onValueChange={(v) => set("orderStatus", v as OrderStatus)}
+                >
                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PLACED">Placed</SelectItem>
-                    <SelectItem value="PROCESSING">Processing</SelectItem>
-                    <SelectItem value="READY_TO_SHIP">Ready to ship</SelectItem>
-                    <SelectItem value="SHIPPED">Shipped</SelectItem>
-                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                    <SelectItem value="Placed">Placed</SelectItem>
+                    <SelectItem value="Processing">Processing</SelectItem>
+                    <SelectItem value="Ready To Ship">Ready to ship</SelectItem>
+                    <SelectItem value="Shipped">Shipped</SelectItem>
+                    <SelectItem value="Cancelled">Cancelled</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
-              <div className="sm:col-span-2">
-                <Field label="Internal notes">
-                  <Textarea rows={3} value={form.notes} onChange={(e) => set("notes", e.target.value)} placeholder="Optional — visible to your team only." />
-                </Field>
-              </div>
             </div>
           </div>
 
@@ -140,8 +167,8 @@ export function CreateOrderDialog({ trigger, onCreate }: Props) {
             <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={submitting}>
-              {submitting ? "Creating..." : "Create order"}
+            <Button type="submit" size="sm" disabled={isMutating}>
+              {isMutating ? "Creating..." : "Create order"}
             </Button>
           </DialogFooter>
         </form>
@@ -150,13 +177,24 @@ export function CreateOrderDialog({ trigger, onCreate }: Props) {
   );
 }
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
+function Field({
+  label,
+  required,
+  error,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  error?: string;
+  children: ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
       <Label className="text-xs font-medium text-muted-foreground">
         {label} {required && <span className="text-destructive">*</span>}
       </Label>
       {children}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

@@ -1,124 +1,132 @@
-export type PaymentStatus = "PAID" | "PENDING" | "FAILED" | "REFUNDED";
-export type OrderStatus =
-  "PLACED" | "PROCESSING" | "READY_TO_SHIP" | "SHIPPED" | "CANCELLED";
+
+
+export const PAYMENT_STATUS = ["Paid", "Pending", "Failed", "Refunded"] as const;
+export type PaymentStatus = (typeof PAYMENT_STATUS)[number];
+
+export const ORDER_STATUS = [
+  "Placed",
+  "Processing",
+  "Ready To Ship",
+  "Shipped",
+  "Cancelled",
+] as const;
+export type OrderStatus = (typeof ORDER_STATUS)[number];
+
+export const SCHEDULER_STATUS = ["Success", "Partial", "Failed"] as const;
+export type SchedulerStatus = (typeof SCHEDULER_STATUS)[number];
+
+export const SCHEDULER_TRIGGER = ["Cron", "Manual"] as const;
+export type SchedulerTrigger = (typeof SCHEDULER_TRIGGER)[number];
+
+// ─── Variant type (UI only) ────────────────────────────────────────────────────
+
 export type Variant =
-  "success" | "warning" | "danger" | "info" | "neutral" | "primary" | "purple";
+  | "success"
+  | "warning"
+  | "danger"
+  | "info"
+  | "neutral"
+  | "primary"
+  | "purple";
+
+// ─── Status history entry ──────────────────────────────────────────────────────
+
+export interface StatusHistory {
+  fromStatus: OrderStatus;
+  toStatus: OrderStatus;
+  changedAt: string;
+  updatedBy: "Scheduler" | "User";
+}
+
+// ─── Order (matches backend IOrder response) ───────────────────────────────────
 
 export interface Order {
-  id: string;
-  customer: string;
-  email: string;
+  _id: string;
+  customerName: string;
   phone: string;
-  product: string;
+  productName: string;
   amount: number;
-  payment: PaymentStatus;
-  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  orderStatus: OrderStatus;
+  statusHistory: StatusHistory[];
   createdAt: string;
+  updatedAt: string;
 }
 
-const customers = [
-  ["Wade Warren", "wade@acme.co", "+12025550134"],
-  ["Esther Howard", "esther@northwind.io", "+14155550198"],
-  ["Jenny Wilson", "jenny.w@loop.dev", "+16465550177"],
-  ["Guy Hawkins", "guy@planetary.com", "+13125550142"],
-  ["Jacob Jones", "jacob.j@relay.app", "+19175550155"],
-  ["Kristin Watson", "kristin@vista.co", "+12135550121"],
-  ["Albert Flores", "albert@harbor.dev", "+13055550189"],
-  ["Eleanor Pena", "eleanor@fern.app", "+16175550167"],
-  ["Theresa Webb", "theresa@arc.io", "+17205550111"],
-  ["Cameron Wills", "cam@parallel.co", "+15035550102"],
-  ["Devon Lane", "devon@meridian.io", "+14155550119"],
-  ["Brooklyn Simmons", "brooklyn@stripe.dev", "+16465550133"],
-];
-
-const products = [
-  "Aurora Wireless Headphones",
-  "Meridian Smart Lamp",
-  "Nova Coffee Grinder Pro",
-  "Zenith Ergonomic Chair",
-  "Cascade Standing Desk",
-  "Harmony Portable Speaker",
-  "Flexy Modular Sofa",
-  "Haven Linen Duvet Set",
-];
-
-const paymentStatuses: PaymentStatus[] = [
-  "PAID",
-  "PENDING",
-  "PAID",
-  "PAID",
-  "FAILED",
-  "PAID",
-  "PENDING",
-  "REFUNDED",
-];
-const orderStatuses: OrderStatus[] = [
-  "PLACED",
-  "PROCESSING",
-  "READY_TO_SHIP",
-  "SHIPPED",
-  "PLACED",
-  "PROCESSING",
-  "READY_TO_SHIP",
-  "CANCELLED",
-];
-
-export const orders: Order[] = Array.from({ length: 24 }, (_, i) => {
-  const [name, email, phone] = customers[i % customers.length];
-  const d = new Date(2026, 5, 28 - (i % 28));
-  return {
-    id: `FP-${10247 - i}`,
-    customer: name,
-    email,
-    phone,
-    product: products[i % products.length],
-    amount: Math.round((80 + ((i * 37.5) % 1200)) * 100) / 100,
-    payment: paymentStatuses[i % paymentStatuses.length],
-    status: orderStatuses[i % orderStatuses.length],
-    createdAt: d.toISOString(),
-  };
-});
+// ─── Scheduler Log (matches backend ISchedulerLog response) ───────────────────
 
 export interface SchedulerLog {
-  id: string;
+  _id: string;
   runTime: string;
-  ordersChecked: number;
-  ordersUpdated: number;
-  executionMs: number;
-  status: "SUCCESS" | "FAILED" | "PARTIAL";
-  trigger: "CRON" | "MANUAL" | "WEBHOOK";
+  checked: number;
+  updated: number;
+  duration: number;
+  status: SchedulerStatus;
+  trigger: SchedulerTrigger;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const schedulerLogs: SchedulerLog[] = Array.from(
-  { length: 18 },
-  (_, i) => {
-    const d = new Date(Date.now() - i * 1000 * 60 * 37);
-    const statuses: SchedulerLog["status"][] = [
-      "SUCCESS",
-      "SUCCESS",
-      "SUCCESS",
-      "PARTIAL",
-      "SUCCESS",
-      "FAILED",
-      "SUCCESS",
-    ];
-    const triggers: SchedulerLog["trigger"][] = [
-      "CRON",
-      "CRON",
-      "MANUAL",
-      "CRON",
-      "WEBHOOK",
-      "CRON",
-      "CRON",
-    ];
-    return {
-      id: `RUN-${8420 - i}`,
-      runTime: d.toISOString(),
-      ordersChecked: 40 + ((i * 13) % 180),
-      ordersUpdated: 2 + ((i * 5) % 24),
-      executionMs: 240 + ((i * 91) % 1400),
-      status: statuses[i % statuses.length],
-      trigger: triggers[i % triggers.length],
-    };
-  },
-);
+// ─── Pagination ────────────────────────────────────────────────────────────────
+
+export interface Pagination {
+  currentPage: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface OrdersPagination extends Pagination {
+  totalOrders: number;
+}
+
+export interface LogsPagination extends Pagination {
+  totalLogs: number;
+}
+
+// ─── API Response wrappers ─────────────────────────────────────────────────────
+
+export interface OrdersResponse {
+  success: boolean;
+  message: string;
+  data: {
+    orders: Order[];
+    pagination: OrdersPagination;
+  };
+}
+
+export interface CreateOrderResponse {
+  success: boolean;
+  message: string;
+  data: Order;
+}
+
+export interface SchedulerLogsResponse {
+  success: boolean;
+  message: string;
+  data: SchedulerLog[];
+  pagination: LogsPagination;
+}
+
+export interface RunSchedulerResponse {
+  success: boolean;
+  message: string;
+  data: {
+    checked: number;
+    updated: number;
+    duration: number;
+    status: SchedulerStatus;
+  };
+}
+
+// ─── Form DTO (what CreateOrderDialog sends) ──────────────────────────────────
+
+export interface CreateOrderDto {
+  customerName: string;
+  phone: string;
+  productName: string;
+  amount: number;
+  paymentStatus: PaymentStatus;
+  orderStatus: OrderStatus;
+}

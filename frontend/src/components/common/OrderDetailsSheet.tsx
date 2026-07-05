@@ -1,6 +1,5 @@
 import {
   Copy,
-  Mail,
   Phone,
   Package,
   CreditCard,
@@ -31,16 +30,6 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-function prettyStatus(s: string) {
-  return s
-    .toLowerCase()
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-function prettyPayment(s: string) {
-  return s.charAt(0) + s.slice(1).toLowerCase();
-}
 function formatFull(iso: string) {
   const d = new Date(iso);
   return d.toLocaleString("en-GB", {
@@ -67,10 +56,10 @@ export function OrderDetailsSheet({ order, open, onOpenChange }: Props) {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <SheetTitle className="text-lg font-semibold tracking-tight">
-                      Order {order.id}
+                      Order #{order._id.slice(-8).toUpperCase()}
                     </SheetTitle>
-                    <StatusBadge variant={orderVariant(order.status)}>
-                      {prettyStatus(order.status)}
+                    <StatusBadge variant={orderVariant(order.orderStatus)}>
+                      {order.orderStatus}
                     </StatusBadge>
                   </div>
                   <SheetDescription className="mt-1 text-[13px]">
@@ -83,7 +72,7 @@ export function OrderDetailsSheet({ order, open, onOpenChange }: Props) {
                     size="sm"
                     className="h-9 gap-1.5"
                     onClick={() => {
-                      void navigator.clipboard.writeText(order.id);
+                      void navigator.clipboard.writeText(order._id);
                       toast.success("Order ID copied");
                     }}
                   >
@@ -114,68 +103,62 @@ export function OrderDetailsSheet({ order, open, onOpenChange }: Props) {
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">
-                              {order.product}
+                              {order.productName}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              SKU · FP-{order.id.slice(3)} · Qty 1
+                              SKU · {order._id.slice(-8).toUpperCase()} · Qty 1
                             </p>
                           </div>
                         </div>
                         <p className="text-sm font-semibold tabular-nums text-foreground">
-                          ${order.amount.toFixed(2)}
+                          ₹{order.amount.toFixed(2)}
                         </p>
                       </div>
                       <Separator />
                       <div className="p-4 space-y-2 text-sm">
                         <SummaryRow
                           label="Subtotal"
-                          value={`$${order.amount.toFixed(2)}`}
+                          value={`₹${order.amount.toFixed(2)}`}
                         />
-                        <SummaryRow label="Shipping" value="$0.00" muted />
-                        <SummaryRow label="Tax" value="$0.00" muted />
+                        <SummaryRow label="Shipping" value="₹0.00" muted />
+                        <SummaryRow label="Tax" value="₹0.00" muted />
                         <Separator className="my-2" />
                         <SummaryRow
                           label="Total"
-                          value={`$${order.amount.toFixed(2)}`}
+                          value={`₹${order.amount.toFixed(2)}`}
                           bold
                         />
                       </div>
                     </div>
                   </Section>
 
-                  <Section title="Timeline">
+                  <Section title="Status history">
                     <ol className="relative border-l border-border ml-2 space-y-4">
-                      {[
-                        {
-                          label: "Order placed",
-                          time: order.createdAt,
-                          active: true,
-                        },
-                        {
-                          label:
-                            "Payment " +
-                            prettyPayment(order.payment).toLowerCase(),
-                          time: order.createdAt,
-                          active: order.payment === "PAID",
-                        },
-                        {
-                          label: prettyStatus(order.status),
-                          time: order.createdAt,
-                          active: true,
-                        },
-                      ].map((e, i) => (
-                        <li key={i} className="ml-4">
-                          <span
-                            className={`absolute -left-[5px] h-2.5 w-2.5 rounded-full ring-4 ring-background ${e.active ? "bg-primary" : "bg-muted-foreground/40"}`}
-                          />
-                          <p className="text-sm font-medium text-foreground">
-                            {e.label}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatFull(e.time)}
-                          </p>
+                      {order.statusHistory.length === 0 ? (
+                        <li className="ml-4 text-xs text-muted-foreground">
+                          No transitions yet.
                         </li>
-                      ))}
+                      ) : (
+                        order.statusHistory.map((h, i) => (
+                          <li key={i} className="ml-4">
+                            <span className="absolute -left-[5px] h-2.5 w-2.5 rounded-full ring-4 ring-background bg-primary" />
+                            <p className="text-sm font-medium text-foreground">
+                              {h.fromStatus} → {h.toStatus}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatFull(h.changedAt)} · by {h.updatedBy}
+                            </p>
+                          </li>
+                        ))
+                      )}
+                      {/* Always show the initial "Placed" event */}
+                      <li className="ml-4">
+                        <span className="absolute -left-[5px] h-2.5 w-2.5 rounded-full ring-4 ring-background bg-muted-foreground/40" />
+                        <p className="text-sm font-medium text-foreground">Order placed</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatFull(order.createdAt)}
+                        </p>
+                      </li>
                     </ol>
                   </Section>
                 </div>
@@ -183,20 +166,7 @@ export function OrderDetailsSheet({ order, open, onOpenChange }: Props) {
                 <div className="space-y-6">
                   <Section title="Customer">
                     <div className="rounded-lg border border-border p-4 space-y-3">
-                      <InfoRow
-                        icon={User}
-                        label="Name"
-                        value={order.customer}
-                      />
-                      <InfoRow
-                        icon={Mail}
-                        label="Email"
-                        value={order.email}
-                        action={() => {
-                          void navigator.clipboard.writeText(order.email);
-                          toast.success("Email copied");
-                        }}
-                      />
+                      <InfoRow icon={User} label="Name" value={order.customerName} />
                       <InfoRow
                         icon={Phone}
                         label="Phone"
@@ -215,14 +185,14 @@ export function OrderDetailsSheet({ order, open, onOpenChange }: Props) {
                         <span className="flex items-center gap-2 text-xs text-muted-foreground">
                           <CreditCard className="h-3.5 w-3.5" /> Status
                         </span>
-                        <StatusBadge variant={paymentVariant(order.payment)}>
-                          {prettyPayment(order.payment)}
+                        <StatusBadge variant={paymentVariant(order.paymentStatus)}>
+                          {order.paymentStatus}
                         </StatusBadge>
                       </div>
                       <InfoRow
                         icon={Hash}
                         label="Reference"
-                        value={`TXN-${order.id.slice(3)}`}
+                        value={`TXN-${order._id.slice(-8).toUpperCase()}`}
                       />
                       <InfoRow
                         icon={Calendar}
@@ -241,13 +211,7 @@ export function OrderDetailsSheet({ order, open, onOpenChange }: Props) {
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
       <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -271,13 +235,13 @@ function SummaryRow({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span
-        className={`text-sm ${muted ? "text-muted-foreground" : "text-foreground"}`}
-      >
+      <span className={`text-sm ${muted ? "text-muted-foreground" : "text-foreground"}`}>
         {label}
       </span>
       <span
-        className={`text-sm tabular-nums ${bold ? "font-semibold text-foreground" : muted ? "text-muted-foreground" : "text-foreground"}`}
+        className={`text-sm tabular-nums ${
+          bold ? "font-semibold text-foreground" : muted ? "text-muted-foreground" : "text-foreground"
+        }`}
       >
         {value}
       </span>
@@ -304,12 +268,7 @@ function InfoRow({
       <div className="flex items-center gap-1 min-w-0">
         <span className="text-sm text-foreground truncate">{value}</span>
         {action && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 shrink-0"
-            onClick={action}
-          >
+          <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={action}>
             <Copy className="h-3 w-3" />
           </Button>
         )}

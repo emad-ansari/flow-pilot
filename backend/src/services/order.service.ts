@@ -4,12 +4,7 @@ import { CreateOrderDto, GetOrdersDto } from "@/lib/validators";
 export const createOrder = async (data: CreateOrderDto) => {
   const order = await Order.create({
     ...data,
-    statusHistory: [
-      {
-        status: data.orderStatus,
-        changedAt: new Date(),
-      },
-    ],
+    statusHistory: [], // No prior transition on creation
   });
 
   return order;

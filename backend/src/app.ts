@@ -6,6 +6,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 
 import orderRoutes from "./routes/order.route";
+import schedulerRoutes from "./routes/scheduler.route";
 
 const app = express();
 
@@ -25,5 +26,6 @@ app.get("/", (_, res) => {
 });
 
 app.use("/api/orders", orderRoutes);
+app.use("/api/scheduler", schedulerRoutes);
 
 export default app;
