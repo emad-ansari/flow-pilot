@@ -1,4 +1,4 @@
-import { Activity, CheckCircle2, XCircle, Clock, Play, RefreshCw } from "lucide-react";
+import { Activity, CheckCircle2, XCircle, Clock, Play, RefreshCw } from "@/lib/icons";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatCard } from "@/components/common/StatCard";

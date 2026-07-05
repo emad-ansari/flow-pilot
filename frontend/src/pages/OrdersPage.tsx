@@ -15,7 +15,7 @@ import {
   ChevronRight,
   ListFilter,
   PackageSearch,
-} from "lucide-react";
+} from "@/lib/icons";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatCard } from "@/components/common/StatCard";

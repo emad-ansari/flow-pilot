@@ -1,5 +1,5 @@
 import {useLocation, Link} from "react-router-dom";
-import { Package, Timer, Sparkles, Settings, LifeBuoy } from "lucide-react";
+import { Package, Timer, Sparkles, Settings, LifeBuoy } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 const nav = [
